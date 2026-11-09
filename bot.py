@@ -11,12 +11,13 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 BOT_NAME = "Win365"
-BOT_ABOUT = "Everyday tools: calculate percentages, convert units, and count words and characters inside Telegram."
+BOT_ABOUT = "Win365 utility tools: percentage calculations, unit conversions, and word and character counts."
 BOT_DESCRIPTION = (
-    "Welcome to Win365, your everyday utility bot.\n\n"
-    "Calculate percentages and discounts, convert weight, length and temperature, "
-    "or count words and characters in your text.\n\n"
-    "Tap Start and choose one of the three tools. All tools work inside Telegram."
+    "Win365 provides three free tools inside Telegram.\n\n"
+    "Percentage Calculator: calculate percentages, discounts and percentage changes.\n"
+    "Unit Converter: convert weight, length and temperature.\n"
+    "Text Counter: count words and characters in text you send.\n\n"
+    "Tap Start, choose a tool and follow its input example."
 )
 BUTTONS = ("Percentage Calculator", "Unit Converter", "Text Counter")
 KEYBOARD = {"keyboard": [[b] for b in BUTTONS], "resize_keyboard": True,
@@ -140,7 +141,9 @@ class Bot:
         command = text.split()[0].split("@")[0].lower() if text.startswith("/") else ""
         if command in {"/start", "/cancel"}:
             self.modes.pop(chat, None)
-            reply = "Welcome to Win365. Choose a tool below."
+            reply = ("Welcome to Win365. Three free tools inside Telegram:\n"
+                     "Percentage Calculator, Unit Converter and Text Counter.\n"
+                     "Choose a tool below to see a worked example, then send your own input.")
         elif command == "/help":
             reply = "Choose a tool below, then follow its instructions. You can switch tools at any time. Use /cancel to return to the menu."
         elif command == "/privacy":
@@ -152,7 +155,12 @@ class Bot:
             self.modes.move_to_end(chat)
             if len(self.modes) > 10000:
                 self.modes.popitem(last=False)
-            reply = PROMPTS[text]
+            examples = {
+                BUTTONS[0]: "Example: percent 15 200\n" + percentage("percent 15 200"),
+                BUTTONS[1]: "Example: 140 lb to kg\n" + convert("140 lb to kg"),
+                BUTTONS[2]: "Example text: Hello world\n" + count_text("Hello world"),
+            }
+            reply = examples[text] + "\n\n" + PROMPTS[text]
         elif not text:
             reply = "Please send text or choose one of the tools below."
         elif chat not in self.modes:
