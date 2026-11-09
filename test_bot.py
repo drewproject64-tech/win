@@ -59,6 +59,21 @@ class ToolTests(unittest.TestCase):
         self.assertNotIn(1, bot.modes)
         self.assertEqual(len(api.calls[-1][1]["reply_markup"]["keyboard"]), 3)
 
+    def test_every_button_returns_example_and_accepts_input(self):
+        api = FakeAPI()
+        bot = Bot(api)
+        cases = [(BUTTONS[0], "percent 15 200", "= 30"),
+                 (BUTTONS[1], "32 f to c", "= 0 c"),
+                 (BUTTONS[2], "hello world", "Words: 2")]
+        self.assertEqual(len(BUTTONS), 3)
+        for button, value, expected in cases:
+            for text in (button, value):
+                bot.handle({"message": {"chat": {"id": 10, "type": "private"}, "text": text}})
+                result = api.calls[-1][1]
+                self.assertEqual(len(result["reply_markup"]["keyboard"]), 3)
+                self.assertNotIn("http", result["text"])
+                self.assertIn("Example" if text == button else expected, result["text"])
+
 
 if __name__ == "__main__":
     unittest.main()
